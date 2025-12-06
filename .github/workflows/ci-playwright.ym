@@ -1,0 +1,47 @@
+name: Playwright CI
+
+# 1. Cuando se ejecuta el workflow
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+# 2. Definicion de los jobs a ejecutar
+jobs:
+  test:
+    # 3. Ambiente donde correra el job (Ubuntu mas reciente)
+    runs-on: ubuntu-latest
+
+    # 4. Pasos a seguir
+    steps:
+    - name: Checkout del codigo
+      uses: actions/checkout@v4
+
+    - name: Configurar Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20 # Ajusta a la version que uses (ej. 16, 18, 20)
+
+    - name: Instalar dependencias
+      run: npm ci # 'ci' es mas rapido y seguro que 'install' en CI
+
+    - name: Instalar Playwright Browsers
+      run: npx playwright install --with-deps
+
+    # 5. Ejecutar las pruebas
+    - name: Ejecutar pruebas de Playwright
+      run: npx playwright test
+
+    # 6. (Opcional) Subir el informe de resultados
+    - name: Subir resultados del informe de Playwright (si falla)
+      if: always() # Ejecutar siempre, incluso si las pruebas fallan
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
